@@ -24,3 +24,6 @@ app.use("/auth", authRoutes);
 
 const bugRoutes = require("./routes/bugRoutes");
 app.use("/bugs", bugRoutes);
+
+const stressRoutes = require("./routes/stressRoutes");
+app.use("/stress", stressRoutes);
