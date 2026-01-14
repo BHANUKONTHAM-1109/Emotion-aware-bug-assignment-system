@@ -1,23 +1,42 @@
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_squared_error
 import joblib
 
-# Sample training data
-data = {
-    "workload": [2,4,6,8,5,3,7],
-    "reopenRate": [1,2,3,4,2,1,3],
-    "lateCommits": [1,3,4,5,2,2,4],
-    "stress": [2.1,4.2,6.1,8.0,5.0,3.2,6.5]
-}
+df = pd.read_csv("train.csv")
 
-df = pd.DataFrame(data)
+df = df.drop("Employee_Id", axis=1)
 
-X = df[["workload","reopenRate","lateCommits"]]
-y = df["stress"]
+X = df.drop("Stress_Level", axis=1)
+y = df["Stress_Level"]
 
-model = LinearRegression()
-model.fit(X,y)
+cat_cols = ["Work_From","Work_Life_Balance","Lives_With_Family","Working_State"]
+num_cols = [c for c in X.columns if c not in cat_cols]
 
-joblib.dump(model,"stress_model.pkl")
+preprocessor = ColumnTransformer([
+    ("cat", OneHotEncoder(handle_unknown="ignore"), cat_cols),
+    ("num", "passthrough", num_cols)
+])
 
-print("Stress model trained and saved")
+model = RandomForestRegressor(n_estimators=200, random_state=42)
+
+pipeline = Pipeline([
+    ("prep", preprocessor),
+    ("model", model)
+])
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+pipeline.fit(X_train, y_train)
+
+y_pred = pipeline.predict(X_test)
+
+print("MSE:", mean_squared_error(y_test, y_pred))
+
+joblib.dump(pipeline, "stress_model.pkl")
+
+print("Stress ML model saved")
