@@ -5,7 +5,8 @@ const express = require("express");
 const pool = require("./utils/db");
 
 const app = express();
-//DB TEST
+
+// DB TEST (only once at startup)
 pool.query("SELECT NOW()", (err, res) => {
   if (err) console.error("DB Error:", err);
   else console.log("DB Connected:", res.rows[0]);
@@ -14,10 +15,8 @@ pool.query("SELECT NOW()", (err, res) => {
 app.use(express.json());
 
 app.get("/", (req, res) => {
-    res.send("Emotion Aware Bug System API Running");
+  res.send("Emotion Aware Bug System API Running");
 });
-
-app.listen(5000, ()=>console.log("Server running on port 5000"));
 
 const authRoutes = require("./routes/authRoutes");
 app.use("/auth", authRoutes);
@@ -30,4 +29,11 @@ app.use("/stress", stressRoutes);
 
 const assignmentRoutes = require("./routes/assignmentRoutes");
 app.use("/assign", assignmentRoutes);
- 
+
+// Start server only if run directly
+if (require.main === module) {
+  app.listen(5000, () => console.log("Server running"));
+}
+
+
+module.exports = app;
