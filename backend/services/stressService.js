@@ -1,21 +1,31 @@
+const { exec } = require("child_process");
 const pool = require("../utils/db");
 
 exports.calculateStress = async (developerId, workload, reopenRate, lateCommits) => {
-  let score = 0;
 
-  score += workload * 0.4;
-  score += reopenRate * 0.3;
-  score += lateCommits * 0.3;
+  return new Promise((resolve, reject) => {
 
-  await pool.query(
-    "INSERT INTO stress_history(developer_id, score) VALUES($1,$2)",
-    [developerId, score]
-  );
+    exec(
+      `python ml_api.py ${workload} ${reopenRate} ${lateCommits}`,
+      async (error, stdout) => {
 
-  await pool.query(
-    "UPDATE developers SET stress_score=$1 WHERE id=$2",
-    [score, developerId]
-  );
+        if (error) return reject(error);
 
-  return score;
+        const score = parseFloat(stdout);
+
+        await pool.query(
+          "INSERT INTO stress_history(developer_id, score) VALUES($1,$2)",
+          [developerId, score]
+        );
+
+        await pool.query(
+          "UPDATE developers SET stress_score=$1 WHERE id=$2",
+          [score, developerId]
+        );
+
+        resolve(score);
+      }
+    );
+
+  });
 };
