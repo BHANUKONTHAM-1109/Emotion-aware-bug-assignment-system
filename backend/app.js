@@ -1,39 +1,43 @@
 require("dotenv").config();
-console.log("DB URL:", process.env.DATABASE_URL);
-
 const express = require("express");
-const pool = require("./utils/db");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const { pool } = require("./utils/db");
+const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
+
+const authRoutes = require("./routes/authRoutes");
+const bugRoutes = require("./routes/bugRoutes");
+const stressRoutes = require("./routes/stressRoutes");
+const assignmentRoutes = require("./routes/assignmentRoutes");
+const developersRoutes = require("./routes/developersRoutes");
 
 const app = express();
 
-// DB TEST (only once at startup)
-pool.query("SELECT NOW()", (err, res) => {
-  if (err) console.error("DB Error:", err);
-  else console.log("DB Connected:", res.rows[0]);
-});
-
+app.use(helmet());
+app.use(cors({ origin: process.env.FRONTEND_URL || "*", credentials: true }));
 app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.send("Emotion Aware Bug System API Running");
-});
-
-const authRoutes = require("./routes/authRoutes");
-app.use("/auth", authRoutes);
-
-const bugRoutes = require("./routes/bugRoutes");
-app.use("/bugs", bugRoutes);
-
-const stressRoutes = require("./routes/stressRoutes");
-app.use("/stress", stressRoutes);
-
-const assignmentRoutes = require("./routes/assignmentRoutes");
-app.use("/assign", assignmentRoutes);
-
-// Start server only if run directly
-if (require.main === module) {
-  app.listen(5000, () => console.log("Server running"));
+app.use(express.urlencoded({ extended: true }));
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
 }
 
+// Health check
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", message: "Emotion-aware bug assignment API" });
+});
+
+// DB connectivity check (startup only, optional)
+pool.query("SELECT 1").catch((err) => console.error("DB check:", err.message));
+
+// API routes (frontend uses baseURL + /api/...)
+app.use("/api/auth", authRoutes);
+app.use("/api/bugs", bugRoutes);
+app.use("/api/stress", stressRoutes);
+app.use("/api/assignments", assignmentRoutes);
+app.use("/api/developers", developersRoutes);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;

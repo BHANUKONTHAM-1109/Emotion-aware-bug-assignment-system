@@ -1,27 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../utils/db");
+const { authMiddleware } = require("../middleware/authMiddleware");
+const { autoAssignBug, listAssignments } = require("../controllers/assignmentController");
 
-// POST /assignments/:bugId
-router.post("/:bugId", async (req, res) => {
-  const bugId = req.params.bugId;
-  const { id, name, stress_score } = req.body;
-
-  try {
-    await pool.query(
-      "UPDATE bugs SET status='ASSIGNED' WHERE id=$1",
-      [bugId]
-    );
-
-    await pool.query(
-      "INSERT INTO assignments(bug_id, developer_id) VALUES($1,$2)",
-      [bugId, id]
-    );
-
-    res.json({ message: "Bug assigned successfully" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+router.use(authMiddleware);
+router.post("/auto/:bugId", autoAssignBug);
+router.get("/", listAssignments);
 
 module.exports = router;
