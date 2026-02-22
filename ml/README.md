@@ -1,6 +1,6 @@
 # ML Service (FastAPI)
 
-Stress prediction microservice for the Emotion-Aware Bug Assignment system.
+Stress prediction microservice for the Emotion-Aware Bug Assignment System.
 
 ## Endpoints
 
