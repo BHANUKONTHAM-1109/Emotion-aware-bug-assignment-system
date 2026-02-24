@@ -1,14 +1,26 @@
 # Emotion-Aware Workload Optimized Bug Assignment System
 
-Enterprise-grade bug tracking and assignment platform that assigns bugs to developers based on **workload**, **stress signals**, and **productivity** using an ML model aligned with the [OSMI Mental Health in Tech Survey](https://www.kaggle.com/datasets/osmi/mental-health-in-tech-survey) dataset.
+An enterprise-grade bug tracking and assignment platform that assigns bugs to developers based on **workload**, **stress signals**, and **productivity**, using an ML model inspired by the [OSMI Mental Health in Tech Survey](https://www.kaggle.com/datasets/osmi/mental-health-in-tech-survey).
 
-## Architecture
+The goal is to make bug assignment **fairer and less stressful** by giving managers a decision-support tool that is workload- and emotion-aware (not a medical product).
 
-- **Frontend**: React + TypeScript (Vite), JWT auth, dark UI
-- **Backend**: Node.js + Express (CommonJS), layered routes → controllers → services → models
+## Tech stack
+
+- **Frontend**: React, TypeScript, Vite, React Router
+- **Backend**: Node.js, Express (CommonJS), JSON Web Tokens (JWT)
 - **Database**: PostgreSQL (Supabase-compatible)
-- **ML**: Python FastAPI microservice; model trained on `ml/train.csv` (workload/stress-style features)
-- **Deploy**: Render (backend + ML), Vercel (frontend), Supabase (DB)
+- **ML service**: Python, FastAPI, scikit-learn, joblib
+- **Tooling / DevOps**: GitHub Actions, Render (backend + ML), Vercel (frontend), Supabase (DB)
+
+## Key features
+
+- **Emotion-aware auto-assignment** – assigns bugs using a composite of severity, open bug count, average resolution time and an approximate stress score from the ML service.
+- **Interactive dashboard** – shows the logged-in developer’s stress band, workload mix (severity distribution) and recent assigned bugs, with light visualizations and filters.
+- **Product-style login page** – the login view doubles as a minimal landing page explaining the product, model, and ethics in plain language.
+- **Full bug lifecycle** – create, list, view and update bugs, with assignment history stored in `bug_assignments` for analytics.
+- **Developer metrics** – `developer_metrics` table tracks open bugs, resolution time and current stress score per user.
+- **ML microservice** – a separate FastAPI service exposes `/predict` for stress scoring, fed with developer metrics from the backend.
+- **Clean architecture** – controllers, services, and models separated in the backend; typed API client and clear routing on the frontend.
 
 ## Project structure
 
@@ -38,7 +50,7 @@ Enterprise-grade bug tracking and assignment platform that assigns bugs to devel
 └── .github/workflows/ci.yml
 ```
 
-## Setup
+## Setup (local development)
 
 ### 1. Database (PostgreSQL / Supabase)
 
@@ -88,6 +100,20 @@ npm run dev
 ```
 
 Open `http://localhost:5173`. Register a user, then create bugs and use **Auto-assign** on the Bugs page.
+You will see:
+
+- **Login page**: split layout showing a short product overview on the left and the login form on the right.
+- **Dashboard**: stress band, workload overview (severity mix), and recent bugs list.
+
+## Environment files and naming
+
+This project follows a consistent naming convention for environment templates:
+
+- **Backend**: `backend/.env.example` → copy to `backend/.env` and fill in values.
+- **Frontend**: `frontend/.env.example` → copy to `frontend/.env`.
+- **ML service** (optional): `ml/.env.example` → copy to `ml/.env` if you want to override the default `PORT`.
+
+Standardised names (`.env.example`) make it clear which variables are required and keep repository-safe defaults out of `.env` files.
 
 ## API (base: `http://localhost:5000`)
 
@@ -125,6 +151,12 @@ Open `http://localhost:5173`. Register a user, then create bugs and use **Auto-a
    - Frontend: `npm install` then `npm run dev`.
 4. **First user**: Open the app, go to Register, create an account (e.g. Developer). Then log in and create a bug, then click **Auto-assign** to test the assignment engine.
 5. **Optional**: Add more developers (register with role Developer) so the auto-assign has multiple candidates. Optionally update `developer_metrics` (e.g. resolution times) for more realistic stress scoring.
+
+## How to talk about this project (for your portfolio)
+
+In interviews or your portfolio you can describe this project as:
+
+> A full-stack SaaS-style bug tracking platform that auto-assigns bugs to developers based on workload, productivity and an approximate stress signal from an ML model. It combines a Node.js/Express API and PostgreSQL schema with a Python/FastAPI microservice and a React+TypeScript dashboard to give managers a transparent, emotion-aware decision-support tool for routing work.
 
 ## Screenshots
 
