@@ -10,7 +10,7 @@ Stress prediction microservice for the Emotion-Aware Bug Assignment System.
 | GET | `/health` | Health check; `model_loaded: true` if `stress_model.pkl` exists |
 | POST | `/predict` | Predict stress score (0–1) for a developer |
 
-## POST /predict
+## POST /predict EXAMPLE
 
 **Request body (JSON):**
 ```json
