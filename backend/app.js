@@ -22,7 +22,7 @@ if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
 }
 
-// Health check
+// Health check for the system
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Emotion-aware bug assignment API" });
 });
